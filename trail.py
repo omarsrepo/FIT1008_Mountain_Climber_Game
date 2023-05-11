@@ -120,12 +120,17 @@ class Trail:
                     current = follows.pop().item.store
                 else:
                     break
-
-
         follows.clear()  # Make sure the linked stack is cleared after being used
 
     def collect_all_mountains(self) -> list[Mountain]:
-        """Returns a list of all mountains on the trail."""
+        """
+        Returns a list of all mountains on the trail.
+
+        Complexity Analysis:
+        --------------------
+        Best case: O(1) if there is only one TrailSeries in the Trail
+        Worst case: O(N) where N is the no.of nodes (TrailSeries/TrailSplit) in the Trail
+        """
         current = self.store
         test_list = []
         temp_stack = LinkedStack()

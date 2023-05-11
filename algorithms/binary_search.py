@@ -28,12 +28,17 @@ def _binary_search_aux(l: list[T], item: T, lo: int, hi: int) -> int:
     if lo == hi:
         return lo
     mid = (hi + lo) // 2
-    if l[mid] > item:
+    if l[mid].length > item.length:
         # Item would be before mid
         return _binary_search_aux(l, item, lo, mid)
-    elif l[mid] < item:
+    elif l[mid].length < item.length:
         # Item would be after mid
         return _binary_search_aux(l, item, mid+1, hi)
-    elif l[mid] == item:
-        return mid
+    elif l[mid].length == item.length:
+        if l[mid] == item:
+            return mid
+        elif l[mid-1] == item:
+            return mid-1
+        elif l[mid+1] == item:
+            return mid+1
     raise ValueError(f"Comparison operator poorly implemented {item} and {l[mid]} cannot be compared.")

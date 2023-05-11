@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from mountain import Mountain
 from algorithms.mergesort import mergesort
+from algorithms.binary_search import binary_search
 
 
 class MountainOrganiser:
@@ -16,12 +17,12 @@ class MountainOrganiser:
          Complexity analysis:
         --------------------
         Best case: O(1) if there is only 1 mountain in the self.mountains list
-        Worst case: O(n) if there are n mountains in self.mountains list
+        Worst case: O(log(N)) where N is the total no.of mountains added so far
         """
         if mountain not in self.mountains:
             raise KeyError(mountain)
         else:
-            return self.mountains.index(mountain)
+            return binary_search(self.mountains, mountain)
 
     def add_mountains(self, mountains: list[Mountain]) -> None:
         """
