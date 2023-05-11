@@ -13,8 +13,9 @@ class MountainManager:
         """
         Complexity Analysis:
         --------------------
-        Best case:
-        Worst Case:
+        Best case: O(hash(key)) first position is empty for the manager (LinearProbeTable) and the organiser list (MountainOrganiser) is empty
+        Worst case: O(hash(key) + N*comp(K)) when we've searched the entire table where N is the table size for self.manager
+                    + O(Mlog(M) + N) for N mountains in the mountains organiser list and Mlog(M) for the self.mountains of length M
         """
         self.manager[mountain.name] = mountain
         self.organiser.add_mountains([mountain])
@@ -23,8 +24,10 @@ class MountainManager:
         """
         Complexity Analysis:
         --------------------
-        Best case:
-        Worst Case:
+        Best case: O(hash(key)) when there is only 1 mountain to remove from the manager and organiser
+        Worst Case: O((N*hash(key)+N^2*comp(K)) + N)
+                    for removing an item from manager --> O(N*hash(key)+N^2*comp(K)) deleting item is midway through large chain.
+                    for removing an item from the organiser list --> O(N)
         """
         self.organiser.mountains.remove(mountain)
         del self.manager[mountain.name]
@@ -33,8 +36,8 @@ class MountainManager:
         """
         Complexity Analysis:
         --------------------
-        Best case:
-        Worst Case:
+        Best case: O(1) is there is only 1 mountain in both the manager and the organiser to edit
+        Worst Case: O(index(array) + N) where N is the length of the manager table size
         """
         self.organiser.mountains[self.organiser.mountains.index(old)] = new
         # self.manager[old.name] = new
@@ -48,8 +51,8 @@ class MountainManager:
         """
         Complexity Analysis:
         --------------------
-        Best case:
-        Worst Case:
+        Best case: O(1) when there is only 1 mountain in the organiser list
+        Worst Case: O(N) when N is the length of the organiser list and we need to traverse all the items in the list
         """
         mountains_with_difficulty = []
         for mountain in self.organiser.mountains:
@@ -63,8 +66,8 @@ class MountainManager:
 
         Complexity Analysis:
         --------------------
-        Best case:
-        Worst Case:
+        Best case: O(1) when there is only one mountain in the organiser
+        Worst Case: O(N + M*N) where N is the length of the organiser list and M is the range of the difficulty levels
         """
         diff_groups = []
 

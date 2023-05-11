@@ -74,6 +74,15 @@ class DoubleKeyTable(Generic[K1, K2, V]):
 
         :raises KeyError: When the key pair is not in the table, but is_insert is False.
         :raises FullError: When a table is full and cannot be inserted.
+
+        Complexity Analysis:
+        --------------------
+        Best case: O(len(key1) + len(key2)) when the positions in the outer table and inner table are empty
+        Worst case: O(N*len(key1) + M*len(key2)) where N = size of outer array and M = size of inner array.
+
+                    Worst case is when the outer table and inner table are full or if the outer key and inner key are
+                    at positions (outer_index-1) and (inner_index-1) so the linear probe has to wrap around the table
+                    and keep searching till length of list to find the outer and inner keys to update their values.
         """
         position1 = self.hash1(key1)
 
@@ -107,6 +116,16 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         """
         key = None: returns all top-level keys in the table.
         key = x: returns all bottom-level keys for top-level key x.
+
+        Complexity Analysis:
+        --------------------
+        Best case: O(N) where N is outer table size and when key = None. Simply return all the keys in the outer table
+        Worst case: O(N*len(K1) + M) where N is length of outer table and M is length of internal table.
+
+                    Worst case happens when the outer key is at position (hash1(key)-1) which means the linear probe function
+                    has to wrap around the outer table and iterate through the whole thing to find the position of the outer key.
+                    It then has to access the internal table associated with outer key and iterate through the whole internal table
+                    to append all the keys to the key list.
         """
         keys = []
         if key:
@@ -117,16 +136,32 @@ class DoubleKeyTable(Generic[K1, K2, V]):
                     keys.append(item[0])
         else:
             return self.outer_table.keys()
+
         return keys
 
     def values(self, key: K1 | None = None) -> list[V]:
         """
         key = None: returns all values in the table.
         key = x: returns all values for top-level key x.
+
+        Complexity Analysis:
+        --------------------
+        Best case: O(M) where M is the length of the inner table and when the outer key is at the correct
+                   index provided by the hash function which allows us to immediately access the inner table.
+                   The only step left is to iterate through the inner table and append all the values to the values list.
+
+        Worst case: O(N + P*(N*len(Key) + M)) where N is length of outer table, P is length of keys list and M is the length of interal table.
+
+                    This happens when we no Key = None and we have to first get a list of all the keys in the outer table.
+                    We then have to iterate through all the keys in the key list and probe for their locations and then once we get
+                    their locations, we have to access their associated internal table and iterate through the entire internal table
+                    and append all the values to the values list.
         """
         values = []
         if key is None:
+            # Get a list of all the keys in the outer table
             keys = self.keys()
+            # Iterate through all the internal tables for each external key
             for key in keys:
                 self.outer_table.hash = lambda k: self.hash1(key)
                 inner_table = self.outer_table.array[self.outer_table._linear_probe(key, False)][1]
@@ -139,7 +174,6 @@ class DoubleKeyTable(Generic[K1, K2, V]):
             for item in inner_table.array:
                 if item is not None:
                     values.append(item[1])
-
         return values
 
     def iter_keys(self, key: K1 | None = None) -> Iterator[K1 | K2]:
@@ -171,10 +205,6 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         key = k:
             Returns an iterator of all values in the bottom-hash-table for k.
         """
-        # if key is None:
-        #     return iter(self.values())
-        # else:
-        #     return iter(self.values(key))
         if key is None:
             iterator = HashTableIterator(self.outer_table)
             iterator.values = True
@@ -206,11 +236,20 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         else:
             return True
 
-    def _getitem_(self, key: tuple[K1, K2]) -> V:
+    def __getitem__(self, key: tuple[K1, K2]) -> V:
         """
         Get the value at a certain key
 
         :raises KeyError: when the key doesn't exist.
+
+        Complexity Analysis: (Same as Linear Probe)
+        --------------------
+        Best case: O(len(key1) + len(key2)) when the positions in the outer table and inner table are empty
+        Worst case: O(N*len(key1) + M*len(key2)) where N = size of outer array and M = size of inner array.
+
+                    Worst case is when the outer table and inner table are full or if the outer key and inner key are
+                    at positions (outer_index-1) and (inner_index-1) so the linear probe has to wrap around the table
+                    and keep searching till length of list to find the outer and inner keys to update their values.
         """
         positions = self._linear_probe(key[0], key[1], False)
         return self.outer_table.array[positions[0]][1].array[positions[1]][1]
@@ -218,6 +257,12 @@ class DoubleKeyTable(Generic[K1, K2, V]):
     def __setitem__(self, key: tuple[K1, K2], data: V) -> None:
         """
         Set a (key, value) pair in our hash table.
+
+        Complexity Analysis:
+        --------------------
+        Best case: O(len(key1) + len(key2)) when the positions in the outer table and inner table are empty and the outer table and inner tablers
+                   have not exceeded their load factors
+        Worst case: O(N*len(key1) + M*len(key2)) where N = size of outer array and M = size of inner array.
         """
         positions = self._linear_probe(key[0], key[1], True)
         internal_table = self.outer_table.array[positions[0]][1]
@@ -238,26 +283,21 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         Deletes a (key, value) pair in our hash table.
 
         :raises KeyError: when the key doesn't exist.
+
+        Complexity Analysis:
+        --------------------
+        Best case: O(len(key1) + len(key2) + hash(key2))
+        Worst case: O(N*len(key1) + M*len(key2) + (N*hash(key)+N^2*comp(K))) : see complexity of _linear_probe and LinearProbeTable deleteitem method
         """
+        # The contains magic method will raise the key errors if the keys don't exist
         positions = self._linear_probe(key[0], key[1], False)
-        outer_index = positions[0]
-        inner_index = positions[1]
-        # The linear probe will raise the key errors if the keys don't exist
-        inner_table = self.outer_table.array[outer_index][1]
-        inner_table.array[inner_index] = None
-        inner_table.count -= 1
+        inner_table = self.outer_table.array[positions[0]][1]
+        inner_table.hash = lambda k: self.hash2(k, inner_table)
 
-        inner_index = (inner_index + 1) % inner_table.table_size
-        while inner_table.array[inner_index] is not None:
-            key2, value = inner_table.array[inner_index]
-            inner_table.array[inner_index] = None
-            # Reinsert.
-            newpos = self._linear_probe(key[0], key2, True)
-            inner_table.array[newpos[1]] = (key2, value)
-            inner_index = (inner_index + 1) % self.table_size
+        del inner_table[key[1]]  # complexity: O(hash(key[1])) / O(N*hash(key)+N^2*comp(K))
 
-        if self.outer_table.array[outer_index][1].count == 0:
-            self.outer_table.array[outer_index] = None
+        if inner_table.count == 0:
+            self.outer_table.array[positions[0]] = None
             self.outer_table.count -= 1
 
     def _rehash(self) -> None:
@@ -267,6 +307,12 @@ class DoubleKeyTable(Generic[K1, K2, V]):
         :complexity best: O(N*hash(K)) No probing.
         :complexity worst: O(N*hash(K) + N^2*comp(K)) Lots of probing.
         Where N is len(self)
+        Complexity Analysis:
+        --------------------
+        Best case: O(T * (len(key1) + len(key2)) Where T is the length of the outer array before resizing and the (len(key1)+len(key2)) is the
+                   complexity of the setitem method for each key, value pair from the temp_copy array.
+        Worst case: Same as Best case because the for loop sets the key,value pairs into a new empty resized array so there will be less chances
+                    of collisions.
         """
         temp_copy = self.outer_table.array
 
@@ -381,5 +427,26 @@ class HashTableIterator(Generic[T]):
                         else:
                             self.index += 1
                             return item[1]
+
+
+if __name__ == '__main__':
+    dt = DoubleKeyTable(sizes=[12], internal_sizes=[5])
+    dt.hash1 = lambda k: ord(k[0]) % 12
+    dt.hash2 = lambda k, sub_table: ord(k[-1]) % 5
+
+    dt["May", "Jim"] = 1
+    dt["Kim", "Tim"] = 2
+
+    for item in dt.outer_table.array:
+        print(item)
+    print()
+
+
+
+
+
+
+
+
 
 

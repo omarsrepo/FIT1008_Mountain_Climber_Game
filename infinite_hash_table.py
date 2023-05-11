@@ -56,7 +56,6 @@ class InfiniteHashTable(Generic[K, V]):
 
         Complexity Analysis:
         --------------------
-
         """
         table = self.array
         if key not in self.keys:
@@ -152,6 +151,10 @@ class InfiniteHashTable(Generic[K, V]):
         Get the sequence of positions required to access this key.
 
         :raises KeyError: when the key doesn't exist.
+
+        Complexity Analysis:
+        --------------------
+
         """
         self.level = 0
         table = self.array
