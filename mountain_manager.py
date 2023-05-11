@@ -86,38 +86,3 @@ class MountainManager:
                 diff_groups.append(temp)
 
         return diff_groups
-
-
-if __name__ == "__main__":
-    """
-    MountainManager.manager = InfiniteHashTable()
-    MountainManager.manager.array = ArrayR(27)
-    """
-    m1 = Mountain("m1", 2, 2)
-    m2 = Mountain("m2", 2, 9)
-    m3 = Mountain("m3", 3, 6)
-    m4 = Mountain("m4", 3, 1)
-    m5 = Mountain("m5", 4, 6)
-    m6 = Mountain("m6", 7, 3)
-    m7 = Mountain("m7", 7, 7)
-    m8 = Mountain("m8", 7, 8)
-    m9 = Mountain("m9", 7, 6)
-    m10 = Mountain("m10", 8, 4)
-
-    mm = MountainManager()
-    mm.add_mountain(m1)
-    mm.add_mountain(m2)
-    mm.add_mountain(m3)
-    mm.add_mountain(m4)
-    mm.add_mountain(m5)
-    mm.add_mountain(m6)
-    mm.add_mountain(m7)
-
-    # for item in mm.manager.array:
-    #     print(item)
-    #
-    # del mm.manager[m1.name]
-    # print()
-    #
-    # for item in mm.manager.array:
-    #     print(item)

@@ -427,26 +427,3 @@ class HashTableIterator(Generic[T]):
                         else:
                             self.index += 1
                             return item[1]
-
-
-if __name__ == '__main__':
-    dt = DoubleKeyTable(sizes=[12], internal_sizes=[5])
-    dt.hash1 = lambda k: ord(k[0]) % 12
-    dt.hash2 = lambda k, sub_table: ord(k[-1]) % 5
-
-    dt["May", "Jim"] = 1
-    dt["Kim", "Tim"] = 2
-
-    for item in dt.outer_table.array:
-        print(item)
-    print()
-
-
-
-
-
-
-
-
-
-
