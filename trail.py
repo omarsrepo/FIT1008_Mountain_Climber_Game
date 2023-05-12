@@ -162,6 +162,40 @@ class Trail:
         Paths are represented as lists of mountains.
 
         Paths are unique if they take a different branch, even if this results in the same set of mountains.
-        """
-        raise NotImplementedError()
 
+        The traverse function iteratively travels the path while recording the direction of the mountains in
+        current_path. The current path is added to the list of paths if there is no more distance to cover. The
+        function recursively walks both branches if the current store is a TrailSplit and neither branch is None.
+        The current mountain is added to the current path if the current store is a TrailSeries, and if it is not
+        None, the function recursively explores the subsequent trail. The current mountain is then removed from the
+        route before turning around.
+        """
+        def traverse(current: TrailStore, remaining: int, current_path: list[Mountain], follows: LinkedStack) -> None:
+            if remaining == 0:
+                return
+
+            if isinstance(current, TrailSplit):
+                follows.push(current.path_follow.store)
+                if current.path_top.store is not None:
+                    traverse(current.path_top.store, remaining, current_path, follows)
+                if current.path_bottom.store is not None:
+                    traverse(current.path_bottom.store, remaining, current_path, follows)
+
+            elif isinstance(current, TrailSeries):
+                current_path.append(current.mountain)
+                if current.following.store is not None:
+                    traverse(current.following.store, remaining - 1, current_path, follows)
+                else:
+                    if not follows.is_empty():
+                        current = follows.pop()
+                        traverse(current, remaining - 1, current_path, follows)
+            else:
+                if not follows.is_empty():
+                    current = follows.pop()
+                    traverse(current, remaining, current_path, follows)
+
+        current = self.store
+        current_path = []
+        follows = LinkedStack()
+        traverse(current, k, current_path, follows)
+        return current_path
