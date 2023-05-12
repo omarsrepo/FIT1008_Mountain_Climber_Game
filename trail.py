@@ -199,3 +199,4 @@ class Trail:
         follows = LinkedStack()
         traverse(current, k, current_path, follows)
         return current_path
+    
